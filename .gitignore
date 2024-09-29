@@ -1,5 +1,6 @@
 .idea
 *.iml
 *.json
-src/main/resources/datasource.properties
+src/main/resources/app-config.properties
+src/main/resources/test-config.properties
 /target

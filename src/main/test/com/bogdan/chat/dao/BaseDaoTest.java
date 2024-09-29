@@ -18,18 +18,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import static com.bogdan.chat.dao.db.DatabaseConnectionManager.properties;
 
 public class BaseDaoTest {
-    // private static final Properties properties = DatabaseConnectionManager.getProperties();
     @Container
     private static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:14.1")
             .withDatabaseName("aston_crud_task")
-            .withUsername(properties.getProperty("datasource.t_username"))
+            .withUsername("testuser")
             .withReuse(true)
-            .withPassword(properties.getProperty("datasource.t_password"))
+            .withPassword("admin")
             .withInitScript("db/create_tables.sql");
     private static DataSource dataSource;
 
@@ -52,6 +49,7 @@ public class BaseDaoTest {
     @BeforeAll
     static void setupDatabase() {
         postgreSQLContainer.start();
+        String host = postgreSQLContainer.getHost();
         var jdbcContainer = (JdbcDatabaseContainer<?>)postgreSQLContainer;
         DatabaseConnectionManager.setUrl(jdbcContainer.getJdbcUrl());
         DatabaseConnectionManager.setType("test");

@@ -1,0 +1,7 @@
+# Создать файл app-config.properties в resources и указать необходимы значения для ключей
+#for local
+datasource.url=
+datasource.username=
+datasource.password=
+datasource.driverClassName=
+datasource.maximumPoolSize=

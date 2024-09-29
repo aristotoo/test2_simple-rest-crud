@@ -14,11 +14,9 @@ import java.util.Properties;
 public final class DatabaseConnectionManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseConnectionManager.class);
     private static final Map<String,HikariConfig> configMap = new HashMap<>();
-    public static Properties properties = getProperties();
+    private static Properties properties;
     private static String type;
     private static String url;
-
-
 
     public static void setUrl(String url) {
         DatabaseConnectionManager.url = url;
@@ -30,18 +28,8 @@ public final class DatabaseConnectionManager {
     public static void setType(String type) {
         DatabaseConnectionManager.type = type;
     }
-
-    // static {
-    //     properties = getProperties();
-    //     HikariConfig config = new HikariConfig();
-    //     config.setJdbcUrl(properties.getProperty("datasource.url"));
-    //     config.setUsername(properties.getProperty("datasource.username"));
-    //     config.setPassword(properties.getProperty("datasource.password"));
-    //     config.setDriverClassName(properties.getProperty("datasource.driverClassName"));
-    //     config.setMaximumPoolSize(Integer.parseInt(properties.getProperty("datasource.maximumPoolSize")));
-    //     configMap.put("prod", config);
-    // }
     public static void createProdConfig(){
+        properties = getProperties("/app-config.properties");
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(properties.getProperty("datasource.url"));
         config.setUsername(properties.getProperty("datasource.username"));
@@ -52,6 +40,7 @@ public final class DatabaseConnectionManager {
     }
 
     public static void createTestConfig(){
+        properties = getProperties("/test-config.properties");
         HikariConfig forTestConfig = new HikariConfig();
         forTestConfig.setJdbcUrl(url);
         forTestConfig.setUsername(properties.getProperty("datasource.t_username"));
@@ -70,9 +59,9 @@ public final class DatabaseConnectionManager {
         DataSourceHolder.dataSource.close();
     }
 
-    private static Properties getProperties() {
+    private static Properties getProperties(String resourcePath) {
         Properties properties = new Properties();
-        try(InputStream is = DatabaseConnectionManager.class.getResourceAsStream("/datasource.properties")){
+        try(InputStream is = DatabaseConnectionManager.class.getResourceAsStream(resourcePath)){
             properties.load(is);
         } catch (IOException e) {
             LOGGER.debug(e.getMessage());
