@@ -1,6 +1,0 @@
-# Создать файл test-config.properties в resources и указать необходимы значения для ключей
-#for test
-datasource.t_username=
-datasource.t_password=
-datasource.t_driverClassName=
-datasource.t_maximumPoolSize=

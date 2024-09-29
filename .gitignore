@@ -2,5 +2,4 @@
 *.iml
 *.json
 src/main/resources/app-config.properties
-src/main/resources/test-config.properties
 /target
