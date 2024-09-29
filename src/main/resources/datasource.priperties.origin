@@ -1,0 +1,12 @@
+# Создать файл .properties и указать необходимы значения для ключей
+#for local
+datasource.url=
+datasource.username=
+datasource.password=
+datasource.driverClassName=
+datasource.maximumPoolSize=
+#for test
+datasource.t_username=
+datasource.t_password=
+datasource.t_driverClassName=
+datasource.t_maximumPoolSize=
