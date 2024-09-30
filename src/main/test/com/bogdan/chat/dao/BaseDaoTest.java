@@ -4,6 +4,8 @@ import com.bogdan.chat.dao.db.DatabaseConnectionManager;
 import com.bogdan.chat.dao.impl.ChatRoomDaoImpl;
 import com.bogdan.chat.dao.impl.ParticipantsDaoImpl;
 import com.bogdan.chat.dao.impl.UserDaoImpl;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.testcontainers.containers.JdbcDatabaseContainer;
@@ -28,7 +30,7 @@ public class BaseDaoTest {
             .withReuse(true)
             .withPassword("admin")
             .withInitScript("db/create_tables.sql");
-    private static DataSource dataSource;
+    private static HikariDataSource dataSource;
 
     private static UserDao userDao;
     private static ChatRoomDao chatRoomDao;
@@ -51,10 +53,16 @@ public class BaseDaoTest {
         postgreSQLContainer.start();
         String host = postgreSQLContainer.getHost();
         var jdbcContainer = (JdbcDatabaseContainer<?>)postgreSQLContainer;
-        DatabaseConnectionManager.setUrl(jdbcContainer.getJdbcUrl());
-        DatabaseConnectionManager.setType("test");
-        DatabaseConnectionManager.createTestConfig();
-        dataSource = DatabaseConnectionManager.getDataSource();
+        // DatabaseConnectionManager.setUrl(jdbcContainer.getJdbcUrl());
+        // DatabaseConnectionManager.setType("test");
+        // DatabaseConnectionManager.createTestConfig();
+        // dataSource = DatabaseConnectionManager.getDataSource();
+        HikariConfig config = new HikariConfig();//for test
+        config.setJdbcUrl(jdbcContainer.getJdbcUrl());//for test
+        config.setUsername(jdbcContainer.getUsername());//for test
+        config.setPassword(jdbcContainer.getPassword());//for test
+        config.setDriverClassName(jdbcContainer.getDriverClassName());//for test
+        dataSource = new HikariDataSource(config);
         userDao = new UserDaoImpl(dataSource);
         chatRoomDao = new ChatRoomDaoImpl(dataSource);
         participantsDao = new ParticipantsDaoImpl(dataSource);
@@ -63,7 +71,8 @@ public class BaseDaoTest {
         @AfterAll
     static void teardownDatabase() {
         clearDatabase();
-        DatabaseConnectionManager.close();
+        // DatabaseConnectionManager.close();
+        dataSource.close();//for test
         postgreSQLContainer.stop();
     }
 
