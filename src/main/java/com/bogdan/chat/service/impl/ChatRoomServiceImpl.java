@@ -26,6 +26,17 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         this.participantsDao = daoFactory.getParticipantDao();
         this.mapper = new ChatRoomMapper();
     }
+
+    public ChatRoomServiceImpl(DaoProviderFactory daoFactory,
+                               ChatRoomDao dao,
+                               ParticipantsDao participantsDao,
+                               Mapper<ChatRoom, ChatRoomDTO> mapper) {
+        this.daoFactory = daoFactory;
+        this.dao = dao;
+        this.participantsDao = participantsDao;
+        this.mapper = mapper;
+    }
+
     @Override
     public Optional<ChatRoomDTO> findById(Long id) {
         Optional<ChatRoom> byId = dao.findById(id);

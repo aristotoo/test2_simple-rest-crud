@@ -19,6 +19,14 @@ public class ParticipantServiceImpl implements ParticipantService {
         this.dao = factory.getParticipantDao();
         this.mapper = new ParticipantMapper();
     }
+    public ParticipantServiceImpl(DaoProviderFactory factory,
+                                  Mapper<Participation,
+                                          ParticipantDTO> mapper,
+                                  ParticipantsDao dao) {
+        this.factory = factory;
+        this.mapper = mapper;
+        this.dao = dao;
+    }
 
     @Override
     public ParticipantDTO save(ParticipantDTO dto){

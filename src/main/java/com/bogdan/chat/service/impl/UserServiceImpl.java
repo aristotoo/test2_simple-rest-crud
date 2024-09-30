@@ -23,6 +23,15 @@ public class UserServiceImpl implements UserService {
         this.mapper = new UserMapper();
     }
 
+    public UserServiceImpl(DaoProviderFactory daoFactory,
+                           UserDao dao,
+                           Mapper<User,
+                                   UserDTO> mapper) {
+        this.daoFactory = daoFactory;
+        this.dao = dao;
+        this.mapper = mapper;
+    }
+
     @Override
     public Optional<UserDTO> findById(long id) {
         Optional<User> byId = dao.findById(id);
