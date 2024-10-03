@@ -16,11 +16,30 @@ import java.util.Optional;
 public class UserRestServlet extends AbstractRestServlet {
     private UserService userService;
 
+    public UserRestServlet(ObjectMapper mapper, PathHelper helper, UserService userService) {
+        super(mapper, helper);
+        this.userService = userService;
+    }
+    public UserRestServlet(){
+        this.userService = new UserServiceImpl();
+    }
+
     @Override
     public void init() {
-        addPathToURLHandler();
-        this.userService = new UserServiceImpl();
-        this.mapper = new ObjectMapper();
+        try {
+            super.helper.registerPath("/api/users/all","GET",
+                    this.getClass().getMethod("getAll", HttpServletRequest.class, HttpServletResponse.class));
+            super.helper.registerPath("/api/users/save","POST",
+                    this.getClass().getMethod("save",  HttpServletRequest.class, HttpServletResponse.class));
+            super.helper.registerPath("/api/users/upd", "PUT",this.getClass()
+                    .getMethod("update",  HttpServletRequest.class, HttpServletResponse.class));
+            super.helper.registerPath("/api/users/delete","DELETE",this.getClass()
+                    .getMethod("delete",  HttpServletRequest.class, HttpServletResponse.class));
+            super.helper.registerPath("/api/users/(?<userId>\\d+)","GET",this.getClass()
+                    .getMethod("findById",  HttpServletRequest.class, HttpServletResponse.class));
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        }
     }
 
     public void findById(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -43,33 +62,17 @@ public class UserRestServlet extends AbstractRestServlet {
     }
 
     public void save(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        UserDTO userDTO = readValueFromRequest(request,UserDTO.class);
+        UserDTO userDTO = super.readValueFromRequest(request,UserDTO.class);
         mapper.writeValue(response.getOutputStream(), userService.save(userDTO));
     }
 
     public void update(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        UserDTO userDTO = readValueFromRequest(request,UserDTO.class);
+        UserDTO userDTO = super.readValueFromRequest(request,UserDTO.class);
         mapper.writeValue(response.getOutputStream(), userService.update(userDTO));
     }
 
     public void delete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        UserDTO userDTO = readValueFromRequest(request, UserDTO.class);
+        UserDTO userDTO = super.readValueFromRequest(request, UserDTO.class);
         mapper.writeValue(response.getOutputStream(), userService.delete(userDTO));
-    }
-    private void addPathToURLHandler() {
-        try {
-            registerPath("/api/users/all","GET",this.getClass()
-                    .getMethod("getAll", HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/api/users/save","POST",this.getClass()
-                    .getMethod("save",  HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/api/users/upd", "PUT",this.getClass()
-                    .getMethod("update",  HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/api/users/delete","DELETE",this.getClass()
-                    .getMethod("delete",  HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/api/users/(?<userId>\\d+)","GET",this.getClass()
-                    .getMethod("findById",  HttpServletRequest.class, HttpServletResponse.class));
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
     }
 }

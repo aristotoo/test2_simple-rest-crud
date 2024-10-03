@@ -3,6 +3,7 @@ package com.bogdan.chat.servlets;
 import com.bogdan.chat.dto.ChatRoomDTO;
 import com.bogdan.chat.service.ChatRoomService;
 import com.bogdan.chat.service.impl.ChatRoomServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,10 +18,31 @@ public class ChatRoomRestServlet extends AbstractRestServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatRoomRestServlet.class);
     private ChatRoomService chatRoomService;
 
+    public ChatRoomRestServlet(ChatRoomService chatRoomService, PathHelper helper,ObjectMapper mapper) {
+        super(mapper,helper);
+        this.chatRoomService = chatRoomService;
+    }
+
+    public ChatRoomRestServlet(){
+        this.chatRoomService = new ChatRoomServiceImpl();
+    }
+
     @Override
     public void init() {
-        addPathToURLHandler();
-        this.chatRoomService = new ChatRoomServiceImpl();
+        try {
+            helper.registerPath("/chat/all","GET",this.getClass()
+                    .getMethod("getAll", HttpServletRequest.class, HttpServletResponse.class));
+            helper.registerPath("/chat/save","POST",this.getClass()
+                    .getMethod("save",  HttpServletRequest.class, HttpServletResponse.class));
+            helper.registerPath("/chat/upd", "PUT",this.getClass()
+                    .getMethod("update",  HttpServletRequest.class, HttpServletResponse.class));
+            helper.registerPath("/chat/delete","DELETE",this.getClass()
+                    .getMethod("delete",  HttpServletRequest.class, HttpServletResponse.class));
+            helper.registerPath("/chat/(?<userId>\\d+)","GET",this.getClass()
+                    .getMethod("findById",  HttpServletRequest.class, HttpServletResponse.class));
+        } catch (NoSuchMethodException e) {
+            LOGGER.debug(e.getMessage());
+        }
     }
 
     public void getAll(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -51,22 +73,6 @@ public class ChatRoomRestServlet extends AbstractRestServlet {
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write("Object not found");
-        }
-    }
-    private void addPathToURLHandler() {
-        try {
-            registerPath("/chat/all","GET",this.getClass()
-                    .getMethod("getAll", HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/chat/save","POST",this.getClass()
-                    .getMethod("save",  HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/chat/upd", "PUT",this.getClass()
-                    .getMethod("update",  HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/chat/delete","DELETE",this.getClass()
-                    .getMethod("delete",  HttpServletRequest.class, HttpServletResponse.class));
-            registerPath("/chat/(?<userId>\\d+)","GET",this.getClass()
-                    .getMethod("findById",  HttpServletRequest.class, HttpServletResponse.class));
-        } catch (NoSuchMethodException e) {
-            LOGGER.debug(e.getMessage());
         }
     }
 }

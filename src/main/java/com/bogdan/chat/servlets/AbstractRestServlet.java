@@ -10,17 +10,24 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class AbstractRestServlet extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRestServlet.class);
-    private final Map<Pattern, Map<String, Method>> methodMap = new HashMap<>();
-    protected ObjectMapper mapper = new ObjectMapper();
+
+    protected ObjectMapper mapper;
+    protected PathHelper helper;
+
+    public AbstractRestServlet(ObjectMapper mapper, PathHelper helper) {
+        this.mapper = mapper;
+        this.helper = helper;
+    }
+
+    public AbstractRestServlet(){
+        this.mapper = new ObjectMapper();
+        this.helper = new PathHelper();
+    }
 
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -31,7 +38,7 @@ public class AbstractRestServlet extends HttpServlet {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        Map<String,Method> pathMap = getExecutableMethodMapFromPath(uri);
+        Map<String,Method> pathMap = helper.getExecutableMethodMapFromPath(uri);
         if(pathMap != null){
             Method handlerMethod = pathMap.get(method.toLowerCase());
             if(handlerMethod != null){
@@ -47,23 +54,6 @@ public class AbstractRestServlet extends HttpServlet {
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         response.getWriter().write("Resource not found");
     }
-
-    private Map<String,Method> getExecutableMethodMapFromPath(String uri){
-        for(Map.Entry<Pattern,Map<String,Method>> entry : methodMap.entrySet()){
-            Pattern pattern = entry.getKey();
-            Matcher matcher = pattern.matcher(uri);
-            if(matcher.matches()){
-                return entry.getValue();
-            }
-        }
-        return Collections.emptyMap();
-    }
-
-    protected void registerPath(String path, String method, Method handlerMethod) {
-        Map<String,Method> pathMap = methodMap.computeIfAbsent(Pattern.compile(path), k -> new HashMap<>());
-        pathMap.put(method.toLowerCase(),handlerMethod);
-    }
-
     protected <T> T readValueFromRequest(HttpServletRequest request, Class<T> tClass) {
         T t = null;
         try {

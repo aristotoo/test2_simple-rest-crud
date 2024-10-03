@@ -2,6 +2,7 @@ package com.bogdan.chat.servlets;
 
 import com.bogdan.chat.dto.UserDTO;
 import com.bogdan.chat.service.impl.UserServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -15,9 +16,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,11 +37,31 @@ class UserRestServletTest extends AbstractRestServletTest {
             .build();
 
     @BeforeEach
-    void setUp() throws ServletException {
+    void setUp() {
         request = mock(HttpServletRequest.class);
         response = mock(HttpServletResponse.class);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json");
+    }
+    @Test
+    void testInit() throws NoSuchMethodException {
+        servlet.init();
+        verify(helper, times(5)).registerPath(
+                Mockito.anyString(),
+                Mockito.anyString(),
+                Mockito.any(Method.class)
+        );
+
+        verify(helper).registerPath("/api/users/all","GET",servlet.getClass()
+                .getMethod("getAll", HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/api/users/save","POST",servlet.getClass()
+                .getMethod("save",  HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/api/users/upd", "PUT",servlet.getClass()
+                .getMethod("update",  HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/api/users/delete","DELETE",servlet.getClass()
+                .getMethod("delete",  HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/api/users/(?<userId>\\d+)","GET",servlet.getClass()
+                .getMethod("findById",  HttpServletRequest.class, HttpServletResponse.class));
     }
 
     @Test

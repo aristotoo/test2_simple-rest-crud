@@ -1,7 +1,6 @@
 package com.bogdan.chat.servlets;
 
 import com.bogdan.chat.dto.ChatRoomDTO;
-import com.bogdan.chat.dto.UserDTO;
 import com.bogdan.chat.dto.UserInfoDTO;
 import com.bogdan.chat.service.ChatRoomService;
 import jakarta.servlet.ServletException;
@@ -17,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -47,10 +47,32 @@ class ChatRoomRestServletTest extends AbstractRestServletTest{
     }
 
     @Test
+    void testInit() throws NoSuchMethodException {
+        servlet.init();
+        verify(helper, times(5)).registerPath(
+                Mockito.anyString(),
+                Mockito.anyString(),
+                Mockito.any(Method.class)
+        );
+
+        verify(helper).registerPath("/chat/all", "GET",
+                servlet.getClass().getMethod("getAll", HttpServletRequest.class,
+                HttpServletResponse.class));
+        verify(helper).registerPath("/chat/save", "POST",
+                servlet.getClass().getMethod("save", HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/chat/upd", "PUT",
+                servlet.getClass().getMethod("update", HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/chat/delete", "DELETE",
+                servlet.getClass().getMethod("delete", HttpServletRequest.class, HttpServletResponse.class));
+        verify(helper).registerPath("/chat/(?<userId>\\d+)", "GET",
+                servlet.getClass().getMethod("findById", HttpServletRequest.class, HttpServletResponse.class));
+    }
+
+    @Test
     void testFindById() throws Exception {
         Optional<ChatRoomDTO> result = Optional.of(dto);
 
-        when(request.getRequestURI()).thenReturn("/api/users/1");
+        when(request.getRequestURI()).thenReturn("/chat/1");
         String id = "1";
         when(service.findById(Long.parseLong(id))).thenReturn(result);
         servlet.findById(request, response);
@@ -62,6 +84,12 @@ class ChatRoomRestServletTest extends AbstractRestServletTest{
 
     @Test
     void testSave() throws Exception {
+        ChatRoomDTO dto = new ChatRoomDTO.ChatRoomDTOBuilder()
+                .setRoomId(1L)
+                .setName("Test Chat")
+                .setDescription("Test")
+                .setCreateBy(new UserInfoDTO())
+                .build();
         String requestBody = "{\"id\":1,\"name\":\"Test Chat,\"description\":\"Test\"}";
         when(request.getReader()).thenAnswer(invocation -> new BufferedReader(new StringReader(requestBody)));
         when(mapper.readValue(requestBody,ChatRoomDTO.class)).thenReturn(dto);
